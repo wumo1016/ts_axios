@@ -17,7 +17,7 @@ axios({
   url: baseUrl + '/get',
   params: user
 })
-  .then((res: AxiosResponse) => {
+  .then((res: AxiosResponse<User>) => {
     console.log(res)
     console.log(res.data)
   })
