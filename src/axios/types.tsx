@@ -10,8 +10,11 @@ export type Method =
 
 export interface AxiosRequestConfig {
   url: string
-  method: Method
-  params: Record<string, any>
+  method?: Method
+  headers?: Record<string, any>
+  params?: Record<string, any>
+  data?: Record<string, any>
+  timeout?: number
 }
 
 // Axios.prototype.request

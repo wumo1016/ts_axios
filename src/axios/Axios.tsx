@@ -11,18 +11,19 @@ class Axios {
   dispatchRequest<T>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> {
     return new Promise<AxiosResponse<T>>((resolve, reject) => {
       const request = new XMLHttpRequest()
-      let { method, url, params } = config
+      let { method, url, params, data, headers, timeout } = config
       // url中可能包含params参数 所以需要处理
-      if (params && typeof params === 'object') {
+      if (params) {
         params = qs.stringify(params) as any // { name: 'wyb', age: '18' } => name=wyb&age=18
         url += (url.includes('?') ? '&' : '?') + params
       }
-      request.open(method, url, true)
+      request.open(method || 'get', url, true)
       // request.responseType = 'json'
       request.onreadystatechange = function () {
+        const { readyState, status } = request
         // 1 2 3 4(完成)
-        if (request.readyState === 4) {
-          if (request.status >= 200 && request.status < 300) {
+        if (readyState === 4 && status !== 0) {
+          if (status >= 200 && status < 300) {
             const { response, responseText, status, statusText } = request
             const res: AxiosResponse<T> = {
               data: response ? JSON.parse(response) : responseText,
@@ -34,11 +35,32 @@ class Axios {
             }
             resolve(res)
           } else {
-            reject('请求失败')
+            reject(`Error: Request failed width status code ${status}`)
           }
         }
       }
-      request.send()
+      // 处理请求头
+      if (headers) {
+        for (const key in headers) {
+          request.setRequestHeader(key, headers[key])
+        }
+      }
+      // 处理请求体
+      let body: string | null = null
+      if (data) {
+        body = JSON.stringify(data)
+      }
+      request.onerror = function (e) {
+        reject('Error: Network Error')
+      }
+      // 处理超时
+      if (timeout) {
+        request.timeout = timeout
+        request.ontimeout = function () {
+          reject(`Error: timeout of ${timeout}ms exceeded`)
+        }
+      }
+      request.send(body)
     })
   }
 }
