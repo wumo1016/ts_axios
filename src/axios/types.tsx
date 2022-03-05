@@ -25,4 +25,5 @@ export interface AxiosResponse<T = any> {
   statusText: string
   request?: XMLHttpRequest
   headers?: Record<string, any>
+  config?: Record<string, any>
 }
