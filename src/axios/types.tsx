@@ -17,6 +17,8 @@ export interface AxiosRequestConfig {
   timeout?: number
   transformRequest?: (data: any, headers: any) => any
   transformResponse?: (data: any) => any
+  cancelToken?: any
+  isCancel?: any
 }
 
 // Axios.prototype.request
@@ -26,6 +28,8 @@ export interface AxiosInstance {
     request: AxiosInterceptorManager<AxiosRequestConfig>
     response: AxiosInterceptorManager<AxiosResponse>
   }
+  Cancel: any
+  CancelToken: any
 }
 
 export type OnFulfilled<T> = (value: T) => T | Promise<T>

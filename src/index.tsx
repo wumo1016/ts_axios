@@ -181,22 +181,46 @@ const user: User = {
 //   })
 
 /* ----------------- 测试转换请求与响应 ----------------- */
+// axios({
+//   method: 'get',
+//   url: baseUrl + '/get',
+//   params: user,
+//   transformRequest: (data, headers) => {
+//     headers!['common']['name'] = 'wyb'
+//     return JSON.stringify(data)
+//   },
+//   transformResponse: res => {
+//     return res.data
+//   }
+// })
+//   .then(data => {
+//     console.log(data)
+//   })
+//   .catch(e => {
+//     console.log(e)
+//   })
+
+/* ----------------- 任务取消 ----------------- */
+const source = axios.CancelToken.source()
+const isCancel = axios.Cancel
 
 axios({
-  method: 'get',
-  url: baseUrl + '/get',
-  params: user,
-  transformRequest: (data, headers) => {
-    headers!['common']['name'] = 'wyb'
-    return JSON.stringify(data)
-  },
-  transformResponse: res => {
-    return res.data
-  }
+  method: 'post',
+  url: baseUrl + '/post',
+  headers: {},
+  data: user,
+  cancelToken: source.token
 })
-  .then(data => {
-    console.log(data)
+  .then((res: AxiosResponse<User>) => {
+    console.log(res)
+    console.log(res.data)
   })
   .catch(e => {
-    console.log(e)
+    if (isCancel(e)) {
+      console.log(e)
+    } else {
+      console.log(e)
+    }
   })
+
+source.cancel('用户取消了请求') // Cancel {message: '用户取消了请求'}

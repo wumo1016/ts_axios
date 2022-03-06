@@ -2,6 +2,7 @@ import { AxiosRequestConfig, AxiosResponse, Interceptor } from './types'
 import qs from 'qs'
 import parseHeader from 'parse-headers'
 import InterceptorManager from './AxiosInterceptorManager'
+import { CancelToken, isCancel } from './cancel'
 
 const defaults: AxiosRequestConfig = {
   method: 'get',
@@ -29,6 +30,8 @@ class Axios {
     request: new InterceptorManager<AxiosRequestConfig>(),
     response: new InterceptorManager<AxiosResponse>()
   }
+  public Cancel = isCancel
+  public CancelToken = new CancelToken()
 
   // T用来定义响应中的data类型
   request<T>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> {
@@ -126,6 +129,14 @@ class Axios {
           reject(`Error: timeout of ${timeout}ms exceeded`)
         }
       }
+      // 处理取消请求
+      if (config.cancelToken) {
+        config.cancelToken.then(msg => {
+          request.abort()
+          reject(msg)
+        })
+      }
+
       request.send(body)
     })
   }
