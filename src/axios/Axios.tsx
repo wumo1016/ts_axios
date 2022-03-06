@@ -3,7 +3,28 @@ import qs from 'qs'
 import parseHeader from 'parse-headers'
 import InterceptorManager from './AxiosInterceptorManager'
 
+const defaults: AxiosRequestConfig = {
+  method: 'get',
+  timeout: 0,
+  headers: {
+    common: {
+      accept: 'application/json'
+    }
+  }
+}
+const getStyleMethods = ['get', 'head', 'delete', 'options']
+getStyleMethods.forEach(key => {
+  defaults.headers![key] = {}
+})
+const postStyleMethods = ['put', 'post', 'patch']
+postStyleMethods.forEach(key => {
+  defaults.headers![key] = {
+    'content-type': 'application/json' // 请求体的格式
+  }
+})
+
 class Axios {
+  public defaults: AxiosRequestConfig = defaults
   public interceptors = {
     request: new InterceptorManager<AxiosRequestConfig>(),
     response: new InterceptorManager<AxiosResponse>()
@@ -11,9 +32,12 @@ class Axios {
 
   // T用来定义响应中的data类型
   request<T>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    // 合并配置
+    Object.assign(this.defaults.headers, config.headers || {})
+    // 拦截器
     const chain: Interceptor<AxiosRequestConfig | AxiosResponse>[] = [
       {
-        onFulfilled: this.dispatchRequest
+        onFulfilled: this.dispatchRequest.bind(this)
       }
     ]
     this.interceptors.request.interceptors!.forEach(interceptor => {
@@ -34,7 +58,8 @@ class Axios {
   dispatchRequest<T>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> {
     return new Promise<AxiosResponse<T>>((resolve, reject) => {
       const request = new XMLHttpRequest()
-      let { method, url, params, data, headers, timeout } = config
+      let { method, url, params, data, timeout } = config
+      if (!url) url = ''
       // url中可能包含params参数 所以需要处理
       if (params) {
         params = qs.stringify(params) as any // { name: 'wyb', age: '18' } => name=wyb&age=18
@@ -63,11 +88,21 @@ class Axios {
         }
       }
       // 处理请求头
-      if (headers) {
-        for (const key in headers) {
-          request.setRequestHeader(key, headers[key])
+      // if (headers) {
+      //   for (const key in headers) {
+      //     request.setRequestHeader(key, headers[key])
+      //   }
+      // }
+      const headers = this.defaults.headers
+      for (const key in headers) {
+        if (key === 'common' || key === method) {
+          const obj = headers[key]
+          for (const k in obj) {
+            request.setRequestHeader(k, obj[k])
+          }
         }
       }
+
       // 处理请求体
       let body: string | null = null
       if (data) {

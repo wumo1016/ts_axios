@@ -9,7 +9,7 @@ export type Method =
   | 'DELETE'
 
 export interface AxiosRequestConfig {
-  url: string
+  url?: string
   method?: Method
   headers?: Record<string, any>
   params?: Record<string, any>
