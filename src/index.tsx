@@ -13,18 +13,18 @@ const user: User = {
 }
 
 /* ----------------- get ----------------- */
-// axios({
-//   method: 'get',
-//   url: baseUrl + '/get',
-//   params: user
-// })
-//   .then((res: AxiosResponse<User>) => {
-//     console.log(res)
-//     console.log(res.data)
-//   })
-//   .catch(e => {
-//     console.log(e)
-//   })
+axios({
+  method: 'get',
+  url: baseUrl + '/get',
+  params: user
+})
+  .then((res: AxiosResponse<User>) => {
+    console.log(res)
+    console.log(res.data)
+  })
+  .catch(e => {
+    console.log(e)
+  })
 
 /* ----------------- post ----------------- */
 // axios({
