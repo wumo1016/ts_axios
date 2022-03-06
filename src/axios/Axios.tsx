@@ -34,6 +34,10 @@ class Axios {
   request<T>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> {
     // 合并配置
     Object.assign(this.defaults.headers, config.headers || {})
+    // 转换请求
+    if (config.transformRequest && config.data) {
+      config.data = config.transformRequest(config.data, config.headers)
+    }
     // 拦截器
     const chain: Interceptor<AxiosRequestConfig | AxiosResponse>[] = [
       {
@@ -73,13 +77,17 @@ class Axios {
         if (readyState === 4 && status !== 0) {
           if (status >= 200 && status < 300) {
             const { response, responseText, status, statusText } = request
-            const res: AxiosResponse<T> = {
+            let res: AxiosResponse<T> = {
               data: response ? JSON.parse(response) : responseText,
               status,
               statusText,
               headers: parseHeader(request.getAllResponseHeaders()), // getAllResponseHeaders() => content-type=xx;content-length=xxx 所以需要转化成对象
               config,
               request
+            }
+            // 转换响应
+            if (config.transformResponse && res) {
+              res = config.transformResponse(res)
             }
             resolve(res)
           } else {

@@ -15,6 +15,8 @@ export interface AxiosRequestConfig {
   params?: Record<string, any>
   data?: Record<string, any>
   timeout?: number
+  transformRequest?: (data: any, headers: any) => any
+  transformResponse?: (data: any) => any
 }
 
 // Axios.prototype.request

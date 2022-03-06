@@ -166,15 +166,36 @@ const user: User = {
 //     console.log(e)
 //   })
 
+// axios({
+//   method: 'post',
+//   url: baseUrl + '/post',
+//   headers: {},
+//   data: user
+// })
+//   .then((res: AxiosResponse<User>) => {
+//     console.log(res)
+//     console.log(res.data)
+//   })
+//   .catch(e => {
+//     console.log(e)
+//   })
+
+/* ----------------- 测试转换请求与响应 ----------------- */
+
 axios({
-  method: 'post',
-  url: baseUrl + '/post',
-  headers: {},
-  data: user
+  method: 'get',
+  url: baseUrl + '/get',
+  params: user,
+  transformRequest: (data, headers) => {
+    headers!['common']['name'] = 'wyb'
+    return JSON.stringify(data)
+  },
+  transformResponse: res => {
+    return res.data
+  }
 })
-  .then((res: AxiosResponse<User>) => {
-    console.log(res)
-    console.log(res.data)
+  .then(data => {
+    console.log(data)
   })
   .catch(e => {
     console.log(e)
