@@ -1,11 +1,34 @@
-import { AxiosRequestConfig, AxiosResponse } from './types'
+import { AxiosRequestConfig, AxiosResponse, Interceptor } from './types'
 import qs from 'qs'
 import parseHeader from 'parse-headers'
+import InterceptorManager from './AxiosInterceptorManager'
 
 class Axios {
+  public interceptors = {
+    request: new InterceptorManager<AxiosRequestConfig>(),
+    response: new InterceptorManager<AxiosResponse>()
+  }
+
   // T用来定义响应中的data类型
   request<T>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> {
-    return this.dispatchRequest<T>(config)
+    const chain: Interceptor<AxiosRequestConfig | AxiosResponse>[] = [
+      {
+        onFulfilled: this.dispatchRequest
+      }
+    ]
+    this.interceptors.request.interceptors!.forEach(interceptor => {
+      interceptor && chain.unshift(interceptor)
+    })
+    this.interceptors.response.interceptors!.forEach(interceptor => {
+      interceptor && chain.push(interceptor)
+    })
+    let promise: Promise<AxiosRequestConfig | AxiosResponse<T>> =
+      Promise.resolve(config)
+    while (chain.length) {
+      const { onFulfilled, onRejected } = chain.shift()!
+      promise = promise.then(onFulfilled, onRejected)
+    }
+    return promise as any
   }
   // 派发请求
   dispatchRequest<T>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> {

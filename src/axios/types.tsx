@@ -19,7 +19,23 @@ export interface AxiosRequestConfig {
 
 // Axios.prototype.request
 export interface AxiosInstance {
-  <T = any>(config: AxiosRequestConfig): Promise<T>
+  <T = any>(config: AxiosRequestConfig): Promise<AxiosResponse<T>>
+  interceptors: {
+    request: AxiosInterceptorManager<AxiosRequestConfig>
+    response: AxiosInterceptorManager<AxiosResponse>
+  }
+}
+
+export type OnFulfilled<T> = (value: T) => T | Promise<T>
+export type OnRejected = (error: any) => any
+export type Interceptor<T> = {
+  onFulfilled?: OnFulfilled<T>
+  onRejected?: OnRejected
+}
+
+export interface AxiosInterceptorManager<T> {
+  use(onFulfilled?: OnFulfilled<T>, onRejected?: OnRejected): number
+  eject(id: number): void
 }
 
 export interface AxiosResponse<T = any> {
